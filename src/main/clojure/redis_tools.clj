@@ -6,8 +6,9 @@
 
 (def connection-pool (car/make-conn-pool))
 
+(def redises (atom {}))
+
 (defn conn-spec[instance]
   (car/make-conn-spec :host (:ip instance)))
   
 (defmacro winstance [instance & body] `(car/with-conn connection-pool (conn-spec ~instance)  ~@body))
-

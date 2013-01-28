@@ -12,11 +12,11 @@
             [redis-tools :refer [winstance]]
             ))
 
-(def redises (atom {}))
 
 (defn validate-ip [values]
   (when-not (re-find #"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" (:ip values))
-    {:keys [:ip] :msg "Valid IP address i required"}))
+    {:keys [:ip] :msg "Valid IP address i required"})
+  )
 
 (def demo-form
   {:enctype "multipart/form-data"
@@ -49,7 +49,7 @@
        [:li [:a {:href "/"} "Home"] [:span.divider]]
        [:li [:a {:href "/redis"} "Instances"] [:span.divider]]
        [:li.active name]]
-      (let [instance  (get @redises name)]
+      (let [instance  (get @redis-tools/redises name)]
         [:div 
          [:div.pull-left {:style "width: 55%"}
           [:table.table.table-bordered
@@ -72,11 +72,11 @@
          [:div.pull-right {:style "width: 43%"}
            [:h4 "Instance"]
           [:ul
-           (for [[k v] (get @redises name)]
+           (for [[k v] (get @redis-tools/redises name)]
              [:li k ": " v])]
           [:h4 "INFO"]
           [:ul
-           (for [[k v] (redis-tools/winstance instance (car/info*)) ]
+           (for [[k v] (sort (redis-tools/winstance instance (car/info*)))]
              [:li k ": " v])]
           ]])))
 
@@ -108,7 +108,7 @@
       [:p "This is all instances"]
       (when message [:div.alert.alert-success message])
       [:table.table.table-bordered
-       (for [instance (vals @redises)]
+       (for [instance (vals @redis-tools/redises)]
          [:tr
           [:td [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
           [:td (:ip instance)]
@@ -122,14 +122,14 @@
       )))
 
 (defn redis-show-edit-form [name]
-  (redis-show-form (get @redises name)))
+  (redis-show-form (get @redis-tools/redises name)))
 
 (defn redis-delete-instance[name]
-   (reset! redises (dissoc @redises name))
+   (reset! redis-tools/redises (dissoc @redis-tools/redises name))
    (ring.util.response/redirect  "/redis?flash=Instance+deleted."))
 
 (defn redis-submit [params]
   (fp/with-fallback (partial redis-show-form params :problems)
     (let [values (fp/parse-params demo-form params)]
-      (reset! redises (assoc @redises (:name values) values))
+      (reset! redis-tools/redises (assoc @redis-tools/redises (:name values) values))
       (ring.util.response/redirect "/redis?flash=Instance+updated."))))

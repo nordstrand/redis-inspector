@@ -8,6 +8,7 @@
             [formative.parse :as fp]
             [hiccup.page :as page]
             [redis :as redis-page]
+            [redis-object :as redis-object-page]
             [clojure.pprint :refer [pprint]]))
 
 (defn validate-upload [values]
@@ -108,6 +109,9 @@
         [:pre.prettyprint.lang-clj (with-out-str (pprint values))]
         [:p [:a {:href "/"} "Back to the form"]]))))
 
+(defn redis-show-object [name key & params] 
+ (str "FN " (str "name: " name " key: " key " params: " params)))
+
 (defroutes routes
   (GET "/" [& params] (show-demo-form params))
   (GET "/redis" [& params] (redis-page/redis-list params))
@@ -116,6 +120,8 @@
   (POST "/redis/add" [& params] (redis-page/redis-submit params))
   (GET "/redis/:name" [name] (redis-page/redis-show-instance name))
   (POST "/redis/:name/delete" [name] (redis-page/redis-delete-instance name))
+  (GET "/redis/:name/:key" [name key & params] (redis-object-page/redis-show-object name key params))
+  (GET "/debug/:x" [x & p] (str "uri: " x " params:" p))
   (POST "/" [& params] (submit-demo-form params))
   (ANY "*" [] "Not found!"))
 
