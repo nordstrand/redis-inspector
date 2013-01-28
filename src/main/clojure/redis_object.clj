@@ -46,8 +46,8 @@
     [:div.pagination.pagination-large
      [:ul
       [:li [:a {:href (page-url  0  page-size) } "«"]]
-      (li (- from page-size) from)
       (li (- from page-size page-size) (- from page-size))
+      (li (- from page-size) from)
       [:li.active [:a {:href (page-url from to)} (page from to)]]
       (li to (+ to page-size))
       (li (+ to page-size) (+ to page-size page-size))
