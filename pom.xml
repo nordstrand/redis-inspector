@@ -59,6 +59,12 @@
             <artifactId>hiccup</artifactId>
             <version>1.0.2</version>
         </dependency>
+               
+           <dependency>
+            <groupId>hiccup-bootstrap</groupId>
+            <artifactId>hiccup-bootstrap</artifactId>
+            <version>0.1.1</version>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>

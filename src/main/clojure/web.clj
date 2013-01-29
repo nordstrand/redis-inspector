@@ -8,6 +8,7 @@
             [formative.parse :as fp]
             [hiccup.page :as page]
             [redis :as redis-page]
+            [hiccup.bootstrap.middleware :refer [wrap-bootstrap-resources]]
             [redis-object :as redis-object-page]
             [clojure.pprint :refer [pprint]]))
 
@@ -126,7 +127,11 @@
   (ANY "*" [] "Not found!"))
 
 (def app
-  (-> #'routes trace/wrap-stacktrace site))
+  (-> #'routes 
+    wrap-bootstrap-resources
+    trace/wrap-stacktrace 
+    site 
+    ))
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 5000))]
