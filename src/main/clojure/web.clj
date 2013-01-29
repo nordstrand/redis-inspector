@@ -1,4 +1,5 @@
 (ns web
+  (:gen-class :main true) 
   (:require [compojure.core :refer [defroutes GET POST ANY]]
             [compojure.handler :refer [site]]
             [ring.middleware.stacktrace :as trace]
