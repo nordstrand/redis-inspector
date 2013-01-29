@@ -3,7 +3,7 @@
     [formative.core :as f]
     [formative.parse :as fp]
     [hiccup.page :as page]
-    [web-tools :refer [layout]]
+    [web-tools :refer [layout paginate]]
     [clojure.pprint :refer [pprint]]
     [taoensso.carmine :as car]
     [redis-tools :refer [winstance]]
@@ -31,29 +31,6 @@
     (= type "zset" ) (redis-show-zset name key (first params))
     true (str "Object " key " of type " type "not yet supported."))))
 
-(defn page[from to]
-  {:pre  [(< from to)] }
- (let [page-size (- to from)]
-    (inc (/  from  page-size)))) 
-
-
-(defn page-url [name key from to] (format "/redis/%s/%s?from=%s&to=%s" name key from to))
-
-(defn paginate[from to size name key]
-  (let [page-url (partial page-url name key)
-        li (fn [from to] (when (and (>= from 0) (<= to size)) (> (page from to) 0)  [:li [:a {:href (page-url from to)} (page  from to)]])) 
-        page-size (- to from)]
-    [:div.pagination.pagination-large
-     [:ul
-      [:li [:a {:href (page-url  0  page-size) } "«"]]
-      (li (- from page-size page-size) (- from page-size))
-      (li (- from page-size) from)
-      [:li.active [:a {:href (page-url from to)} (page from to)]]
-      (li to (+ to page-size))
-      (li (+ to page-size) (+ to page-size page-size))
-      [:li [:a {:href (page-url  (- size page-size) size)} "»"]]
-      ]]))
-
 (defn redis-show-zset [name key & params]
   (println "params=" params)
   (let [defaults {:from 0, :to 3}
@@ -80,7 +57,7 @@
            [:td score]]
           )
         ]
-       (paginate from to size name key)
+       (paginate (format "/redis/%s/%s" name key) from to size) 
        ]
       [:div.pull-right {:style "width: 43%"}
            [:h4 key]

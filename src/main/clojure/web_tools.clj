@@ -26,3 +26,42 @@
     [:body
      body]
     ))
+
+
+(defn- page[from to]
+  {:pre  [(< from to)] }
+ (let [page-size (- to from)]
+    (inc (/  from  page-size)))) 
+
+(defn- page-url [base-url from to] (format "%s?from=%s&to=%s" base-url from to))
+
+(defn paginate[base-url from to size]
+  (let [page-url (partial page-url base-url)
+        li (fn [from to] 
+             (when (and (>= from 0) (<= to size)) (> (page from to) 0)  
+               [:li [:a {:href (page-url from to)} (page  from to)]])) 
+        page-size (- to from)]
+    [:div.pagination.pagination-large
+     [:ul
+      [:li [:a {:href (page-url  0  page-size) } "«"]]
+      (li (- from page-size page-size) (- from page-size))
+      (li (- from page-size) from)
+      [:li.active [:a {:href (page-url from to)} (page from to)]]
+      (li to (+ to page-size))
+      (li (+ to page-size) (+ to page-size page-size))
+      [:li [:a {:href (page-url  (- size page-size) size)} "»"]]
+      ]]))
+
+
+(comment
+  
+(def renderer-form
+  {:method "get"
+   :renderer :inline
+   :submit-label nil
+   :fields [{:name :renderer
+             :type :select
+             :options ["bootstrap-horizontal"
+                       "bootstrap-stacked"
+                       "table"]
+             :onchange "this.form.submit()"}]}))
