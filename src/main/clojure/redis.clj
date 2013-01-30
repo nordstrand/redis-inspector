@@ -2,14 +2,15 @@
   (:require [compojure.core :refer [defroutes GET POST ANY]]
             [compojure.handler :refer [site]]
             [ring.middleware.stacktrace :as trace]
-            [ring.adapter.jetty :as jetty]
+ ;           [ring.adapter.jetty :as jetty]
+            [ring.util.response :refer [redirect]]
             [formative.core :as f]
             [formative.parse :as fp]
             [hiccup.page :as page]
             [web-tools :refer [layout]]
             [clojure.pprint :refer [pprint]]
             [taoensso.carmine :as car]
-            [redis-tools :refer [winstance]]
+            [redis-tools :refer [winstance]]            
             ))
 
 
@@ -97,17 +98,19 @@
        [:p {:style "word-wrap: normal; white-space: pre; overflow: scroll; font-size: 12px; border: none; background: #f8f8f8; padding: 10px"}
         "Enter Redis server details"]])))
 
-(defn redis-list [params]
-  (let [defaults {:port 6379} message (:flash params) ]
-    (println params)
+(defn redis-list [session]
+  (let [defaults {:port 6379} message  session ]
+    (println session)
+    
     (layout
       [:ul.breadcrumb
        [:li [:a {:href "/"} "Home"] [:span.divider]]
        [:li.active "Instances"]]
       [:h1 "Redis instances"]
-      [:p "This is all instances"]
       (when message [:div.alert.alert-success message])
       [:table.table.table-bordered
+       [:tr
+        [:th "Name"][:th "Host"][:th "Port"][:th ]]
        (for [instance (vals @redis-tools/redises)]
          [:tr
           [:td [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
@@ -126,10 +129,12 @@
 
 (defn redis-delete-instance[name]
    (reset! redis-tools/redises (dissoc @redis-tools/redises name))
-   (ring.util.response/redirect  "/redis?flash=Instance+deleted."))
+    (assoc (redirect "/redis") :flash (str "Instance  " name " is deleted.")))
+
 
 (defn redis-submit [params]
   (fp/with-fallback (partial redis-show-form params :problems)
     (let [values (fp/parse-params demo-form params)]
       (reset! redis-tools/redises (assoc @redis-tools/redises (:name values) values))
-      (ring.util.response/redirect "/redis?flash=Instance+updated."))))
+      (assoc (redirect "/redis") :flash (str "Instance " (-> values :name) " updated.")))))
+

@@ -4,6 +4,7 @@
             [compojure.handler :refer [site]]
             [ring.middleware.stacktrace :as trace]
             [ring.adapter.jetty :as jetty]
+            [ring.util.response :refer [response]]
             [environ.core :refer [env]]
             [formative.core :as f]
             [formative.parse :as fp]
@@ -19,7 +20,7 @@
   ;(GET "/favicon.ico" [& params] (ring.util.response/resource-response "favicon.ico" {:root "public"}))
   ;(GET "/f" [& params] (str "hej" (ring.util.response/resource-response "favicon.ico" {:root "public"})))
    ;(POST "/" [& params] (submit-demo-form params))
-  (GET "/redis" [& params] (redis-page/redis-list params))
+  (GET "/redis" {flash :flash} (redis-page/redis-list flash))
   (GET "/redis/add" [& params] (redis-page/redis-show-form params))
   (GET "/redis/:name/edit" [name] (redis-page/redis-show-edit-form name))
   (POST "/redis/add" [& params] (redis-page/redis-submit params))
