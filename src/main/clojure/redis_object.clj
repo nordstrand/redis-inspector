@@ -25,15 +25,63 @@
  ;  :renderer :bootstrap-stacked
    })
 
+(def hash-form
+  { 
+   :submit-label "OK"
+   :method :get
+   :fields [{:name :h4 :type :heading :text "Lookup value"}
+            {:name :hkey :label "Hash field" }
+            ]
+   :validations [[:required [:field]]
+                 ]
+     })
 
 
-(declare redis-show-zset)
+
+(declare redis-show-zset redis-show-hash)
 
 (defn redis-show-object [name key & params]
   (let [type (redis-tools/winstance (get @redis-tools/redises name) (car/type key))]
     (cond
     (= type "zset" ) (redis-show-zset name key (first params))
+    (= type "hash" ) (redis-show-hash name key (first params))
     true (str "Object " key " of type " type "not yet supported."))))
+
+
+(defn redis-show-hash [name key & params]
+  (let [defaults {}
+        values (merge defaults (first params))
+        base-url (format "/redis/%s/%s" name key)
+        size (redis-tools/winstance (get @redis-tools/redises name) (car/hlen key))
+        instance (get @redis-tools/redises name)]
+    (layout
+      [:ul.breadcrumb
+       [:li [:a {:href "/"} "Home"] [:span.divider]]
+       [:li [:a {:href "/redis"} "Instances"] [:span.divider]]
+       [:li [:a {:href (str "/redis/" name)} name] [:span.divider]]
+       [:li.active key]]
+      [:div.pull-left {:style "width: 55%"}
+
+       [:table.table.table-bordered
+        [:tr
+         [:th "Key"]
+         [:th "Value"]] 
+        [:tr
+         [:td (:hkey values)]
+         [:td (redis-tools/winstance instance (when-let [hkey (-> values :hkey)] (car/hget key hkey)))]]
+        ]
+
+       ]
+      [:div.pull-right {:style "width: 43%"}
+           [:h4 key]          
+          [:ul
+           [:li "Type: " (redis-tools/winstance instance (car/type key))]
+           [:li "Size: " size]
+          ]]
+      (f/render-form (assoc hash-form    
+                            :action base-url
+                            :values values)
+                             ))))
 
 (defn redis-show-zset [name key & params]
   (let [defaults {:from 0, :to 3, :reverse false}
