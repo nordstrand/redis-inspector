@@ -9,15 +9,19 @@
     [redis-tools :refer [winstance]]
     ))
 
-(def paging-form
+(def zset-form
   { 
    :submit-label "OK"
    :method :get
-   :fields [{:name :h1 :type :heading :text "Redis instance"}
+   :fields [{:name :h4 :type :heading :text "Show elements"}
             {:name :from :datatype :int}
             {:name :to :datatype :int}
+            {:name :reverse :label "Reverse order" :type :checkbox }
             ]
-   :validations [[:required [:from :to]]]
+   :validations [[:required [:from :to]]
+                 [:int [:from :to]]
+                ; [:boolean [:reverse]]
+                 ]
  ;  :renderer :bootstrap-stacked
    })
 
@@ -32,12 +36,11 @@
     true (str "Object " key " of type " type "not yet supported."))))
 
 (defn redis-show-zset [name key & params]
-  (println "params=" params)
-  (let [defaults {:from 0, :to 3}
+  (let [defaults {:from 0, :to 3, :reverse false}
         values (merge defaults (first params))
         from (bigint (:from values)) 
         to (bigint (:to values)) 
-        
+        base-url (format "/redis/%s/%s" name key)
         size (redis-tools/winstance (get @redis-tools/redises name) (car/zcard key))
         instance (get @redis-tools/redises name)]
     (layout
@@ -47,17 +50,20 @@
        [:li [:a {:href (str "/redis/" name)} name] [:span.divider]]
        [:li.active key]]
       [:div.pull-left {:style "width: 55%"}
+       (paginate base-url from to size) 
        [:table.table.table-bordered
         [:tr
          [:th "Score"]
          [:th "Value"]]
-        (for [[score value] (apply hash-map  (redis-tools/winstance instance (car/zrange key (:from values) (:to values) "withscores")))]
+        (for [[score value] (partition 2 (redis-tools/winstance instance (if (-> values :reverse Boolean/valueOf) ;TODO investigate why required
+                                                                               (car/zrevrange key (:from values) (:to values) "withscores")
+                                                                               (car/zrange key (:from values) (:to values) "withscores"))))]
           [:tr
            [:td value]
            [:td score]]
           )
         ]
-       (paginate (format "/redis/%s/%s" name key) from to size) 
+       (paginate base-url from to size (str "reverse=" (-> values :reverse))) 
        ]
       [:div.pull-right {:style "width: 43%"}
            [:h4 key]
@@ -67,8 +73,8 @@
            [:li "Size: " (redis-tools/winstance instance (car/zcard key))]
            [:li "From: " (:from values) " To: " (:to values)]
           ]]
-      (f/render-form (assoc paging-form    
-                            :action (str "/redis/" name "/" key)
+      (f/render-form (assoc zset-form    
+                            :action base-url
                             :values values)
                              ))))
   

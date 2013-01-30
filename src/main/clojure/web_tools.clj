@@ -33,10 +33,16 @@
  (let [page-size (- to from)]
     (inc (/  from  page-size)))) 
 
-(defn- page-url [base-url from to] (format "%s?from=%s&to=%s" base-url from to))
+(defn- page-url 
+  ([base-url from to] 
+    (format "%s?from=%s&to=%s" base-url from to))
+  ([base-url url-params from to] 
+    (format "%s&%s" (page-url base-url from to) url-params)))
 
-(defn paginate[base-url from to size]
-  (let [page-url (partial page-url base-url)
+(defn paginate[base-url from to size & url-params]
+  (let [page-url (if (empty? url-params)
+                   (partial page-url base-url)
+                   (partial page-url base-url (first url-params)))
         li (partial (fn [f from to] 
              (when (and (>= from 0) (<= to size)) (> (page from to) 0)  
                [(if (= f from) :li.active :li) [:a {:href (page-url from to)} (page  from to)]])) from)

@@ -59,7 +59,6 @@
             [:td "Type"]
             [:td "TTL"]
             [:td ]]
-           
            (for [key (winstance instance (car/keys "*"))]
              [:tr
              [:td [:a {:href (str "/redis/" (:name instance) "/" key)} key]]
@@ -99,9 +98,7 @@
         "Enter Redis server details"]])))
 
 (defn redis-list [session]
-  (let [defaults {:port 6379} message  session ]
-    (println session)
-    
+  (let [defaults {:port 6379} message  session ]    
     (layout
       [:ul.breadcrumb
        [:li [:a {:href "/"} "Home"] [:span.divider]]
