@@ -36,6 +36,17 @@
                  ]
      })
 
+(def string-form
+  { 
+   :submit-label "OK"
+   :method :get
+   :fields [{:name :h4 :type :heading :text "Show string"}
+            {:name :show :type :submit  :value "value" }
+            ]
+   :validations [[:required [:field]]
+                 ]
+     })
+
 
 
 (declare redis-show-zset redis-show-hash)
@@ -45,13 +56,42 @@
     (cond
     (= type "zset" ) (redis-show-zset name key (first params))
     (= type "hash" ) (redis-show-hash name key (first params))
+    (= type "string" ) (redis-show-string name key (first params))
     true (str "Object " key " of type " type "not yet supported."))))
 
+(defn redis-show-string [name key & params]
+  (let [defaults {}
+        values (merge defaults (first params))
+        base-url (format "/redis/%s/%s" name key)
+        size (redis-tools/winstance (get @redis-tools/redises name) (car/strlen key))
+        instance (get @redis-tools/redises name)
+        hkey (-> values :hkey)]
+    (layout
+      (breadcrumb name key hkey)     
+      [:div.pull-left {:style "width: 55%"}
+       [:table.table.table-bordered
+        [:tr
+         [:th "Key"]
+         [:th "Value"]] 
+        [:tr
+         [:td key]
+        [:td (when (= "value" (:show values)) (redis-tools/winstance instance (car/get key)))]
+        ]
+       ]]
+      [:div.pull-right {:style "width: 43%"}
+           [:h4 key]          
+          [:ul
+           [:li "Type: " (redis-tools/winstance instance (car/type key))]
+           [:li "Size: " size]
+          ]]
+      (f/render-form (assoc string-form    
+                            :action base-url
+                            :values values)
+                             ))))
 
 (defn redis-show-hash [name key & params]
   (let [defaults {}
         values (merge defaults (first params))
-        base-url (format "/redis/%s/%s" name key)
         size (redis-tools/winstance (get @redis-tools/redises name) (car/hlen key))
         instance (get @redis-tools/redises name)
         hkey (-> values :hkey)]
