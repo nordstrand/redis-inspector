@@ -16,7 +16,7 @@
     {:keys [:ip] :msg "Valid IP address i required"})
   )
 
-(def demo-form
+(def redis-form
   {:enctype "multipart/form-data"
    :action "/redis/add"
    :submit-label "Save"
@@ -25,6 +25,7 @@
             {:name :name}
             {:name :ip}
             {:name :port :datatype :int}
+            {:name :db   :datatype :int}
             ]
    :validations [[:required [:name :ip :port]]                ]
    :validator validate-ip
@@ -48,19 +49,20 @@
         [:div 
          [:div.pull-left {:style "width: 55%"}
           [:table.table.table-bordered
-           [:tr
-            [:td "Key"]
-            [:td "Type"]
-            [:td "TTL"]
-            [:td ]]
-           (for [key (winstance instance (car/keys "*"))]
+           [:thead
+            [:tr
+             [:th "Key"]
+             [:th "Type"]
+             [:th "TTL"]
+            [:td ]]]
+           (for [key (sort (winstance instance (car/keys "*")))]
              [:tr
              [:td [:a {:href (str "/redis/" (:name instance) "/" key)} key]]
              [:td (winstance instance (car/type key))]
              [:td (winstance instance (car/ttl key))]
              [:td  
               (f/render-form (assoc delete-form :action (str "/redis/" (:name instance) "/" key "/delete"))) 
-              (f/render-form (assoc edit-form :action (str "/redis/" (:name instance) "/" key "/edit")))]]
+              ]]
              )
            ]]        
          [:div.pull-right {:style "width: 43%"}
@@ -77,14 +79,14 @@
     
       
 (defn redis-show-form [params & {:keys [problems]}]
-  (let [defaults {:port 6379} message (:flash params) ]
+  (let [defaults {:port 6379, :db 0} message (:flash params) ]
     (layout 
       [:ul.breadcrumb
        [:li [:a {:href "/"} "Home"] [:span.divider]]
        [:li [:a {:href "/redis"} "Instances"] [:span.divider]]
        [:li.active "New instance"]] 
       [:div.pull-left {:style "width: 55%"}
-       (f/render-form (assoc demo-form
+       (f/render-form (assoc redis-form
                              :values (merge defaults params)
                              :problems problems))]
       [:div.pull-right {:style "width: 43%"}
@@ -100,7 +102,7 @@
       [:table.table.table-bordered
        [:tr
         [:th "Name"][:th "Host"][:th "Port"][:th ]]
-       (for [instance (vals @redis-tools/redises)]
+       (for [instance (sort-by :name (vals @redis-tools/redises))]
          [:tr
           [:td [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
           [:td (:ip instance)]
@@ -118,12 +120,12 @@
 
 (defn redis-delete-instance[name]
    (reset! redis-tools/redises (dissoc @redis-tools/redises name))
-    (assoc (redirect "/redis") :flash (str "Instance  " name " is deleted.")))
+    (assoc (redirect "/redis") :flash (str "Instance  " name " deleted.")))
 
 
 (defn redis-submit [params]
   (fp/with-fallback (partial redis-show-form params :problems)
-    (let [values (fp/parse-params demo-form params)]
+    (let [values (fp/parse-params redis-form params)]
       (reset! redis-tools/redises (assoc @redis-tools/redises (:name values) values))
       (assoc (redirect "/redis") :flash (str "Instance " (-> values :name) " updated.")))))
 
