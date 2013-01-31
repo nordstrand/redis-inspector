@@ -56,6 +56,15 @@
   ([base-url url-params from to] 
     (format "%s&%s" (page-url base-url from to) url-params)))
 
+(defn start[from to size] 
+  (let [page-size (- to from)
+        total-pages (/ size page-size)
+        p (- (page from to) 2)]
+    (cond
+      (< p 1) 1
+      (> (+ 5 p) total-pages) (- total-pages 4)
+      :else p)))
+
 (defn paginate[base-url from to size & url-params]
   (let [page-url (if (empty? url-params)
                    (partial page-url base-url)
@@ -67,24 +76,8 @@
     [:div.pagination.pagination-large
      [:ul
       [:li [:a {:href (page-url  0  page-size) } "«"]]
-      (li (- from page-size page-size) (- from page-size))
-      (li (- from page-size) from)
-      (li from to)
-      (li to (+ to page-size))
-      (li (+ to page-size) (+ to page-size page-size))
+      (for [p (range (start from to size) (+ 5 (start from to size)))]
+        (li (* (dec p) page-size) (* p page-size)))
       [:li [:a {:href (page-url  (- size page-size) size)} "»"]]
       ]]))
 
-
-(comment
-  
-(def renderer-form
-  {:method "get"
-   :renderer :inline
-   :submit-label nil
-   :fields [{:name :renderer
-             :type :select
-             :options ["bootstrap-horizontal"
-                       "bootstrap-stacked"
-                       "table"]
-             :onchange "this.form.submit()"}]}))

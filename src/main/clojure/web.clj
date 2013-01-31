@@ -28,6 +28,7 @@
   (POST "/redis/:name/delete" [name] (redis-page/redis-delete-instance name))
   (GET "/redis/:name/:key" [name key & params] (redis-object-page/redis-show-object name key params))
   (GET "/debug/:x" [x & p] (str "uri: " x " params:" p))
+ ; (GET "/x" [x]  (f x))
   (ANY "*" [] "Not found!"))
 
 (def app
