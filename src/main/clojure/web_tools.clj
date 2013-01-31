@@ -27,6 +27,23 @@
      body]
     ))
 
+(defn- build-paths[drilldown]
+  (->>
+    drilldown
+    (map-indexed (fn [idx i]  [(take idx drilldown) i]))
+    (map flatten)))
+                             
+
+
+(defn breadcrumb[ & drilldown]
+  [:ul.breadcrumb
+       [:li [:a {:href "/"} "Home"] [:span.divider]]
+       [:li [:a {:href "/redis"} "Instances"] [:span.divider]]
+       (for [p (drop-last (build-paths drilldown))]
+         [:li [:a {:href (apply str "/redis/" (interpose "/" p)) } (last p)] [:span.divider]])
+         [:li.active [:a {:href (apply str "/redis/" (interpose "/" (last (build-paths drilldown))))} (last (last (build-paths drilldown)))]] 
+   ])                                                                                                   
+   
 
 (defn- page[from to]
   {:pre  [(< from to)] }

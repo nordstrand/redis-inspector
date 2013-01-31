@@ -3,7 +3,7 @@
     [formative.core :as f]
     [formative.parse :as fp]
     [hiccup.page :as page]
-    [web-tools :refer [layout paginate]]
+    [web-tools :refer [layout paginate breadcrumb]]
     [clojure.pprint :refer [pprint]]
     [taoensso.carmine :as car]
     [redis-tools :refer [winstance]]
@@ -53,22 +53,18 @@
         values (merge defaults (first params))
         base-url (format "/redis/%s/%s" name key)
         size (redis-tools/winstance (get @redis-tools/redises name) (car/hlen key))
-        instance (get @redis-tools/redises name)]
+        instance (get @redis-tools/redises name)
+        hkey (-> values :hkey)]
     (layout
-      [:ul.breadcrumb
-       [:li [:a {:href "/"} "Home"] [:span.divider]]
-       [:li [:a {:href "/redis"} "Instances"] [:span.divider]]
-       [:li [:a {:href (str "/redis/" name)} name] [:span.divider]]
-       [:li.active key]]
+      (breadcrumb name key hkey)     
       [:div.pull-left {:style "width: 55%"}
-
        [:table.table.table-bordered
         [:tr
          [:th "Key"]
          [:th "Value"]] 
         [:tr
          [:td (:hkey values)]
-         [:td (redis-tools/winstance instance (when-let [hkey (-> values :hkey)] (car/hget key hkey)))]]
+         [:td (redis-tools/winstance instance (when hkey (car/hget key hkey)))]]
         ]
 
        ]
@@ -84,7 +80,7 @@
                              ))))
 
 (defn redis-show-zset [name key & params]
-  (let [defaults {:from 0, :to 3, :reverse false}
+  (let [defaults {:from 0, :to 10, :reverse false}
         values (merge defaults (first params))
         from (bigint (:from values)) 
         to (bigint (:to values)) 
@@ -92,11 +88,7 @@
         size (redis-tools/winstance (get @redis-tools/redises name) (car/zcard key))
         instance (get @redis-tools/redises name)]
     (layout
-      [:ul.breadcrumb
-       [:li [:a {:href "/"} "Home"] [:span.divider]]
-       [:li [:a {:href "/redis"} "Instances"] [:span.divider]]
-       [:li [:a {:href (str "/redis/" name)} name] [:span.divider]]
-       [:li.active key]]
+      (breadcrumb name key)
       [:div.pull-left {:style "width: 55%"}
        (paginate base-url from to size) 
        [:table.table.table-bordered

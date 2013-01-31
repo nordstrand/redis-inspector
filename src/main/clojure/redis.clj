@@ -1,13 +1,10 @@
 (ns redis
-  (:require [compojure.core :refer [defroutes GET POST ANY]]
-            [compojure.handler :refer [site]]
-            [ring.middleware.stacktrace :as trace]
- ;           [ring.adapter.jetty :as jetty]
+  (:require
             [ring.util.response :refer [redirect]]
             [formative.core :as f]
             [formative.parse :as fp]
             [hiccup.page :as page]
-            [web-tools :refer [layout]]
+            [web-tools :refer [layout breadcrumb]]
             [clojure.pprint :refer [pprint]]
             [taoensso.carmine :as car]
             [redis-tools :refer [winstance]]            
@@ -46,10 +43,7 @@
 
 (defn redis-show-instance [name]
     (layout
-      [:ul.breadcrumb
-       [:li [:a {:href "/"} "Home"] [:span.divider]]
-       [:li [:a {:href "/redis"} "Instances"] [:span.divider]]
-       [:li.active name]]
+      (breadcrumb name)
       (let [instance  (get @redis-tools/redises name)]
         [:div 
          [:div.pull-left {:style "width: 55%"}
@@ -100,9 +94,7 @@
 (defn redis-list [session]
   (let [defaults {:port 6379} message  session ]    
     (layout
-      [:ul.breadcrumb
-       [:li [:a {:href "/"} "Home"] [:span.divider]]
-       [:li.active "Instances"]]
+      (breadcrumb)
       [:h1 "Redis instances"]
       (when message [:div.alert.alert-success message])
       [:table.table.table-bordered
