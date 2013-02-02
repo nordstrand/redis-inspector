@@ -6,7 +6,7 @@
     [web-tools :refer [layout paginate breadcrumb]]
     [clojure.pprint :refer [pprint]]
     [taoensso.carmine :as car]
-    [redis-tools :refer [winstance]]
+    [redis-tools :refer [winstance get-instance-by-name]]
     ))
 
 (def zset-form
@@ -65,7 +65,7 @@
 (declare redis-show-zset redis-show-hash redis-show-string redis-show-list redis-show-set)
 
 (defn redis-show-object [name key & params]
-  (let [type (redis-tools/winstance (get @redis-tools/redises name) (car/type key))]
+  (let [type (redis-tools/winstance (get-instance-by-name name) (car/type key))]
     (cond
     (= type "zset" ) (redis-show-zset name key (first params))
     (= type "hash" ) (redis-show-hash name key (first params))
@@ -78,9 +78,9 @@
 (defn redis-show-hash [name key & params]
   (let [defaults {}
         values (merge defaults (first params))
-        size (redis-tools/winstance (get @redis-tools/redises name) (car/hlen key))
         base-url (format "/redis/%s/%s" name key)
-        instance (get @redis-tools/redises name)
+        instance (get-instance-by-name name)
+        size (redis-tools/winstance instance (car/hlen key))
         hkey (-> values :hkey)]
     (layout
       (breadcrumb name key hkey)     
@@ -111,8 +111,8 @@
   (let [defaults {}
         values (merge defaults (first params))
         base-url (format "/redis/%s/%s" name key)
-        size (redis-tools/winstance (get @redis-tools/redises name) (car/scard key))
-        instance (get @redis-tools/redises name)
+        instance (get-instance-by-name name)
+        size (redis-tools/winstance instance (car/scard key))
         hkey (-> values :hkey)]
     (layout
       (breadcrumb name key hkey)     
@@ -129,9 +129,9 @@
 (defn redis-show-hash [name key & params]
   (let [defaults {}
         values (merge defaults (first params))
-        size (redis-tools/winstance (get @redis-tools/redises name) (car/hlen key))
+        size (redis-tools/winstance (get-instance-by-name name) (car/hlen key))
         base-url (format "/redis/%s/%s" name key)
-        instance (get @redis-tools/redises name)
+        instance (get-instance-by-name name)
         hkey (-> values :hkey)]
     (layout
       (breadcrumb name key hkey)     
@@ -163,8 +163,9 @@
         from (bigint (:from values)) 
         to (bigint (:to values)) 
         base-url (format "/redis/%s/%s" name key)
-        size (redis-tools/winstance (get @redis-tools/redises name) (car/zcard key))
-        instance (get @redis-tools/redises name)]
+        instance (get-instance-by-name name)
+        size (redis-tools/winstance instance (car/zcard key))
+        ]
     (layout
       (breadcrumb name key)
       [:div.pull-left {:style "width: 55%"}
@@ -199,13 +200,15 @@
 
 
 (defn redis-show-list [name key & params]
-  (let [defaults {:from 0, :to 10}
+  (let [
+        defaults {:from 0, :to 10}
         values (merge defaults (first params))
         from (bigint (:from values)) 
         to (bigint (:to values)) 
         base-url (format "/redis/%s/%s" name key)
-        size (redis-tools/winstance (get @redis-tools/redises name) (car/llen key))
-        instance (get @redis-tools/redises name)]
+        instance (get-instance-by-name name)
+        size (redis-tools/winstance instance (car/llen key))
+        ]
     (layout
       (breadcrumb name key)
       [:div.pull-left {:style "width: 55%"}

@@ -7,7 +7,7 @@
             [web-tools :refer [layout breadcrumb]]
             [clojure.pprint :refer [pprint]]
             [taoensso.carmine :as car]
-            [redis-tools :refer [winstance]]            
+            [redis-tools :refer [winstance get-instance-by-name]]            
             ))
 
 
@@ -45,7 +45,7 @@
 (defn redis-show-instance [name]
     (layout
       (breadcrumb name)
-      (let [instance  (get @redis-tools/redises name)]
+      (let [instance  (get-instance-by-name name)]
         [:div 
          [:div.pull-left {:style "width: 55%"}
           [:table.table.table-bordered
@@ -68,7 +68,7 @@
          [:div.pull-right {:style "width: 43%"}
            [:h4 "Instance"]
           [:ul
-           (for [[k v] (get @redis-tools/redises name)]
+           (for [[k v] (get-instance-by-name name)]
              [:li k ": " v])]
           [:h4 "INFO"]
           [:ul

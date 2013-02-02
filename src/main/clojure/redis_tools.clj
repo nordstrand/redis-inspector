@@ -8,6 +8,9 @@
 
 (def redises (atom {}))
 
+(defn get-instance-by-name[name]
+  (get @redises name))
+
 (defn conn-spec[instance]
   (car/make-conn-spec :host (:ip instance)))
   
