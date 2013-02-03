@@ -15,11 +15,10 @@
   (GET "/" [ ] (redirect  "/redis"))
   (GET "/redis" {flash :flash} (redis-page/redis-list flash))
   (GET "/redis/add" [& params] (redis-page/redis-show-form params))
-  (GET "/redis/:name/edit" [name] (redis-page/redis-show-edit-form name))
   (POST "/redis/add" [& params] (redis-page/redis-submit params))
   (GET "/redis/:name" [name :as {flash :flash}] (redis-page/redis-show-instance name flash))
   (POST "/redis/:name/:key" [name key & params] (redis-page/redis-operate-on-key name key params))
-  (POST "/redis/:name/delete" [name] (redis-page/redis-delete-instance name))
+  (POST "/redis/:name" [name & params] (redis-page/redis-operate-on-instance name params))
   (GET "/redis/:name/:key" [name key & params] (redis-object-page/redis-show-object name key params))
   (GET "/debug/:x" [x & p] (str "uri: " x " params:" p))
   (ANY "*" [] "Not found!"))
@@ -53,6 +52,6 @@
     ))
 
 (defn -main [& [port]]
-  (let [port (Integer. (or port (env :port) 8080))]
+  (let [port 8080]
     (jetty/run-jetty #'app
                      {:port port :join? false})))

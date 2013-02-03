@@ -7,7 +7,8 @@
             [web-tools :refer [layout breadcrumb]]
             [clojure.pprint :refer [pprint]]
             [taoensso.carmine :as car]
-            [redis-tools :refer [winstance get-instance-by-name get-instances]]            
+            [redis-tools :refer [winstance get-instance-by-name get-instances update-instance delete-instance 
+                                 setup-in-local-redis setup-host setup-key]]
             ))
 
 
@@ -31,15 +32,12 @@
    :validator validate-ip
    })
 
-(def delete-form
+(def instance-form
   {:method "post"
    :renderer :inline
    :submit-label "Delete"
-   })
-(def edit-form
-  {:method "get"
-   :renderer :inline
-   :submit-label "Edit"
+   :fields [{:name :operation :type :hidden }
+            ]
    })
 
 (def key-form
@@ -132,19 +130,14 @@
           [:td (:ip instance)]
           [:td (:port instance)]
           [:td  
-           (f/render-form (assoc delete-form :action (str "/redis/" (:name instance) "/delete"))) 
-           (f/render-form (assoc edit-form :action (str "/redis/" (:name instance) "/edit")))]]
+           (f/render-form (assoc instance-form :values {:operation "delete"}  :action (str "/redis/" (:name instance)))) 
+           (f/render-form (assoc instance-form :submit-label "Edit" :values {:operation "edit"} :action (str "/redis/" (:name instance))))]]
          )
       ]
       [:a {:href "/redis/add" } [:button.btn.btn-primary "Add instance" ]]
+      (when (setup-in-local-redis)  [:div.alert.alert-info "Settings are persisted in Redis instance " setup-host " under key " setup-key "."])
       )))
 
-(defn redis-show-edit-form [name]
-  (redis-show-form (get @redis-tools/redises name)))
-
-(defn redis-delete-instance[name]
-   (reset! redis-tools/redises (dissoc @redis-tools/redises name))
-    (assoc (redirect "/redis") :flash (str "Instance  " name " deleted.")))
 
 (defn redis-operate-on-key[name key params]
   (let [values (fp/parse-params key-form params)]
@@ -154,10 +147,21 @@
                                              (assoc (redirect (str "/redis/" name)) :flash (str "Key " key " deleted.")))
        :else (assoc (redirect (str "/redis/" name)) :flash (str "Unknow operation.")))))
   
+(defn redis-operate-on-instance[name params]
+  (let [values (fp/parse-params instance-form params)]
+     (cond
+       (= "delete" (-> values :operation)) (do 
+                                             (delete-instance name)
+                                             (assoc (redirect "/redis") :flash (str "Instance  " name " deleted!")))
+       (= "edit" (-> values :operation)) (redis-show-form (get-instance-by-name name))
+       :else (assoc (redirect (str "/redis")) :flash (str "Unknow operation on instance.")))))
+
+
+
 
 (defn redis-submit [params]
   (fp/with-fallback (partial redis-show-form params :problems)
     (let [values (fp/parse-params redis-form params)]
-      (reset! redis-tools/redises (assoc @redis-tools/redises (:name values) values))
+      (update-instance (-> values :name) values)
       (assoc (redirect "/redis") :flash (str "Instance " (-> values :name) " updated.")))))
 
