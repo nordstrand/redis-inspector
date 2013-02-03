@@ -126,25 +126,23 @@
           ]]
       )))
 
-(defn redis-show-hash [name key & params]
+(defn redis-show-string [name key & params]
   (let [defaults {}
         values (merge defaults (first params))
-        size (redis-tools/winstance (get-instance-by-name name) (car/hlen key))
+        size (redis-tools/winstance (get-instance-by-name name) (car/strlen key))
         base-url (format "/redis/%s/%s" name key)
         instance (get-instance-by-name name)
-        hkey (-> values :hkey)]
+        show (-> values :show)]
+    (println "=======" show " " values "")
     (layout
-      (breadcrumb name key hkey)     
+      (breadcrumb name key)     
       [:div.pull-left {:style "width: 55%"}
        [:table.table.table-bordered
         [:tr
-         [:th "Key"]
          [:th "Value"]] 
         [:tr
-         [:td (:hkey values)]
-         [:td (redis-tools/winstance instance (when hkey (car/hget key hkey)))]]
+         [:td [:span  (when (= show "value") (redis-tools/winstance instance (car/get key)))]]
         ]
-
        ]
       [:div.pull-right {:style "width: 43%"}
            [:h4 key]          
@@ -152,10 +150,12 @@
            [:li "Type: " (redis-tools/winstance instance (car/type key))]
            [:li "Size: " size]
           ]]
-      (f/render-form (assoc hash-form    
+      (f/render-form (assoc string-form    
                             :action base-url
                             :values values)
                              ))))
+
+
 
 (defn redis-show-zset [name key & params]
   (let [defaults {:from 0, :to 10, :reverse false}
