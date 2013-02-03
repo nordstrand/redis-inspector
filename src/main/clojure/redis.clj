@@ -54,7 +54,11 @@
     (layout
       (breadcrumb name)
       (let [instance  (get-instance-by-name name)
-            instance-info (redis-tools/winstance instance (car/info*))]
+            instance-info (redis-tools/winstance instance (car/info*))
+            slaves (map #(last (first (re-seq #"(.*),.*,.*"  (val %1)))) 
+                        (filter #(re-seq #"slave[0-9]" (key %1)) instance-info))
+            ]
+        
         [:div 
          (when flash [:div.alert.alert-success flash])
          [:div.pull-left {:style "width: 55%"}
@@ -83,7 +87,12 @@
            (for [[k v] instance]
              [:li k ": " v])]
           (for [[name details] (get-instances) :when (and (-> details :ip   (= (get instance-info "master_host")))                                                        )]
-            [:p "Slave of " [:a {:href (apply str "/redis/" name )} name]])
+            [:div.alert.alert-info  "Slave of " [:a {:href (apply str "/redis/" name )} name]])
+          
+          (for [[name details] (get-instances) :when (not-empty (filter #(= (-> details :ip) %1) slaves))]
+            [:div.alert.alert-info "Has slave " [:a {:href (apply str "/redis/" name )} name]])
+          
+        
           [:h4 "INFO"]
           [:ul
            (for [[k v]  (sort instance-info)]
