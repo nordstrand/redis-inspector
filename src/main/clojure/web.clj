@@ -17,14 +17,35 @@
   (GET "/redis/add" [& params] (redis-page/redis-show-form params))
   (GET "/redis/:name/edit" [name] (redis-page/redis-show-edit-form name))
   (POST "/redis/add" [& params] (redis-page/redis-submit params))
-  (GET "/redis/:name" [name] (redis-page/redis-show-instance name))
+  (GET "/redis/:name" [name :as {flash :flash}] (redis-page/redis-show-instance name flash))
+  (POST "/redis/:name/:key" [name key & params] (redis-page/redis-operate-on-key name key params))
   (POST "/redis/:name/delete" [name] (redis-page/redis-delete-instance name))
   (GET "/redis/:name/:key" [name key & params] (redis-object-page/redis-show-object name key params))
   (GET "/debug/:x" [x & p] (str "uri: " x " params:" p))
   (ANY "*" [] "Not found!"))
 
+
+(defn format-request [name request]
+  (with-out-str
+    (println "-------------------------------")
+    (println name)
+    (clojure.pprint/pprint request)
+    (println "-------------------------------")))
+
+(defn wrap-spy [handler spyname include-body]
+  (fn [request]
+    (let [incoming (format-request (str spyname ":\n Incoming Request:") request)]
+      (println incoming)
+      (let [response (handler request)]
+        (let [r (if include-body response (assoc response :body "#<?>"))
+              outgoing (format-request (str spyname ":\n Outgoing Response Map:") r)]
+          (println outgoing)
+          response
+          )))))
+
 (def app
   (-> #'routes 
+    (wrap-spy "start" true)
     wrap-bootstrap-resources
     trace/wrap-stacktrace 
     site

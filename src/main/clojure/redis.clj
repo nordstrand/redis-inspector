@@ -7,7 +7,7 @@
             [web-tools :refer [layout breadcrumb]]
             [clojure.pprint :refer [pprint]]
             [taoensso.carmine :as car]
-            [redis-tools :refer [winstance get-instance-by-name]]            
+            [redis-tools :refer [winstance get-instance-by-name get-instances]]            
             ))
 
 
@@ -42,11 +42,21 @@
    :submit-label "Edit"
    })
 
-(defn redis-show-instance [name]
+(def key-form
+  {:method "post"
+   :renderer :inline
+   :submit-label "Delete"
+   :fields [{:name :operation :type :hidden }
+            ]
+   })
+
+(defn redis-show-instance [name flash]
     (layout
       (breadcrumb name)
-      (let [instance  (get-instance-by-name name)]
+      (let [instance  (get-instance-by-name name)
+            instance-info (redis-tools/winstance instance (car/info*))]
         [:div 
+         (when flash [:div.alert.alert-success flash])
          [:div.pull-left {:style "width: 55%"}
           [:table.table.table-bordered
            [:thead
@@ -55,26 +65,31 @@
              [:th "Type"]
              [:th "TTL"]
             [:td ]]]
+           
            (for [key (sort (winstance instance (car/keys "*")))]
              [:tr
              [:td [:a {:href (str "/redis/" (:name instance) "/" key)} key]]
              [:td (winstance instance (car/type key))]
              [:td (winstance instance (car/ttl key))]
              [:td  
-              (f/render-form (assoc delete-form :action (str "/redis/" (:name instance) "/" key "/delete"))) 
+              (f/render-form (assoc key-form :action (str "/redis/" (:name instance) "/" key )
+                                     :values{ :operation "delete" })) 
               ]]
              )
            ]]        
          [:div.pull-right {:style "width: 43%"}
            [:h4 "Instance"]
           [:ul
-           (for [[k v] (get-instance-by-name name)]
+           (for [[k v] instance]
              [:li k ": " v])]
+          (for [[name details] (get-instances) :when (and (-> details :ip   (= (get instance-info "master_host")))                                                        )]
+            [:p "Slave of " [:a {:href (apply str "/redis/" name )} name]])
           [:h4 "INFO"]
           [:ul
-           (for [[k v] (sort (redis-tools/winstance instance (car/info*)))]
+           (for [[k v]  (sort instance-info)]
              [:li k ": " v])]
           ]])))
+
 
     
       
@@ -102,7 +117,7 @@
       [:table.table.table-bordered
        [:tr
         [:th "Name"][:th "Host"][:th "Port"][:th ]]
-       (for [instance (sort-by :name (vals @redis-tools/redises))]
+       (for [instance (sort-by :name (vals (get-instances)))]
          [:tr
           [:td [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
           [:td (:ip instance)]
@@ -122,6 +137,14 @@
    (reset! redis-tools/redises (dissoc @redis-tools/redises name))
     (assoc (redirect "/redis") :flash (str "Instance  " name " deleted.")))
 
+(defn redis-operate-on-key[name key params]
+  (let [values (fp/parse-params key-form params)]
+     (cond
+       (= "delete" (-> values :operation)) (do 
+                                             (winstance (get-instance-by-name name) (car/del key))
+                                             (assoc (redirect (str "/redis/" name)) :flash (str "Key " key " deleted.")))
+       :else (assoc (redirect (str "/redis/" name)) :flash (str "Unknow operation.")))))
+  
 
 (defn redis-submit [params]
   (fp/with-fallback (partial redis-show-form params :problems)

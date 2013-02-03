@@ -11,6 +11,9 @@
 (defn get-instance-by-name[name]
   (get @redises name))
 
+(defn get-instances[]
+   @redises)
+
 (defn conn-spec[instance]
   (car/make-conn-spec :host (:ip instance)))
   
