@@ -133,7 +133,6 @@
         base-url (format "/redis/%s/%s" name key)
         instance (get-instance-by-name name)
         show (-> values :show)]
-    (println "=======" show " " values "")
     (layout
       (breadcrumb name key)     
       [:div.pull-left {:style "width: 55%"}
@@ -141,9 +140,10 @@
         [:tr
          [:th "Value"]] 
         [:tr
-         [:td [:span  (when (= show "value") (redis-tools/winstance instance (car/get key)))]]
+         [:td   (when (= show "value")  
+                  [:pre (with-out-str (pprint (redis-tools/winstance instance (car/get key))))])]
         ]
-       ]
+       ]]
       [:div.pull-right {:style "width: 43%"}
            [:h4 key]          
           [:ul

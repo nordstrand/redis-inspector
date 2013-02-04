@@ -11,9 +11,22 @@
 (defonce setup-host "192.168.0.118")
 (defonce setup-key "redis_inspector_data")
 
+
+(defn local-redis-available[] 
+  (try (java.net.Socket. setup-host  6379) (catch Exception _ false)))
+
 (defn setup-in-local-redis[]
-  (let [listner-available (try (java.net.Socket. setup-host  6379) (catch Exception _ false))]
-    (when listner-available  (wsetup (car/get setup-key))))) 
+  (when (local-redis-available)  (wsetup (car/get setup-key)))) 
+
+(defn disable-setup-in-local-redis[]
+  (let [s (wsetup (car/get setup-key))]
+    (wsetup (car/del setup-key))
+    (reset! redises s)))
+
+(defn enable-setup-in-local-redis[]
+    (wsetup (car/set setup-key @redises)))
+
+                  
  
 (defn get-instances[]
   (or (setup-in-local-redis)

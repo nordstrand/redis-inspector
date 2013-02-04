@@ -14,6 +14,7 @@
   (GET "/favicon.ico" [] (resource-response "favicon.ico" {:root "public"}))
   (GET "/" [ ] (redirect  "/redis"))
   (GET "/redis" {flash :flash} (redis-page/redis-list flash))
+  (POST "/redis" [& params] (redis-page/redis-operate params))
   (GET "/redis/add" [& params] (redis-page/redis-show-form params))
   (POST "/redis/add" [& params] (redis-page/redis-submit params))
   (GET "/redis/:name" [name :as {flash :flash}] (redis-page/redis-show-instance name flash))

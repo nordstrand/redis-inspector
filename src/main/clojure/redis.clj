@@ -8,7 +8,8 @@
             [clojure.pprint :refer [pprint]]
             [taoensso.carmine :as car]
             [redis-tools :refer [winstance get-instance-by-name get-instances update-instance delete-instance 
-                                 setup-in-local-redis setup-host setup-key]]
+                                 setup-in-local-redis setup-host setup-key local-redis-available enable-setup-in-local-redis 
+                                 disable-setup-in-local-redis]]
             ))
 
 
@@ -135,9 +136,30 @@
          )
       ]
       [:a {:href "/redis/add" } [:button.btn.btn-primary "Add instance" ]]
-      (when (setup-in-local-redis)  [:div.alert.alert-info "Settings are persisted in Redis instance " setup-host " under key " setup-key "."])
+      (when  (local-redis-available)
+        (if (setup-in-local-redis)
+          [:div.alert.alert-info "Settings are persisted in Redis instance " setup-host " under key " setup-key
+           ". Save "  [:a { :onclick "document.do_not_persist_in_redis.submit();"} "settings in volatile memory"] " instead."]
+          [:div.alert.alert-info "Settings are currently persisted in volatile memory. " 
+           [:a { :onclick "document.persist_in_redis.submit();"} "Persist settings in redis instance"]  " " 
+           setup-host " under key " setup-key " instead."
+           ] 
+          ))
+      [:form {:name "persist_in_redis" :action "/redis" :method :post} [:input {:type "hidden" :name "operation" :value "enable_redis_persistance"}]]
+      [:form {:name "do_not_persist_in_redis" :action "/redis" :method :post} [:input {:type "hidden" :name "operation" :value "disable_redis_persistance"}]]
       )))
 
+(defn redis-operate[params]
+  (let [values params]
+     (cond
+       (= "enable_redis_persistance" (-> values :operation)) (do 
+                                             (enable-setup-in-local-redis)
+                                             (assoc (redirect "/redis") :flash "Settings persisted in redis instance."))
+       (= "disable_redis_persistance" (-> values :operation)) (do 
+                                             (disable-setup-in-local-redis)
+                                             (assoc (redirect "/redis") :flash "Settings deleted from redis instance."))
+       :else (assoc (redirect (str "/redis")) :flash (str "Unknow operation.")))))
+  
 
 (defn redis-operate-on-key[name key params]
   (let [values (fp/parse-params key-form params)]
