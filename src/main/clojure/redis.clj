@@ -119,24 +119,30 @@
 (defn redis-list [session]
   (let [defaults {:port 6379} message  session ]    
     (layout
-      (breadcrumb)
-      [:h1 "Redis instances"]
-      (when message [:div.alert.alert-success message])
-      [:table.table.table-bordered
-       [:tr
-        [:th "Name"][:th "Host"][:th "Port"][:th ]]
-       (for [instance (sort-by :name (vals (get-instances)))]
-         [:tr
-          [:td [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
-          [:td (:ip instance)]
-          [:td (:port instance)]
-          [:td  
-           (f/render-form (assoc instance-form :values {:operation "delete"}  :action (str "/redis/" (:name instance)))) 
-           (f/render-form (assoc instance-form :submit-label "Edit" :values {:operation "edit"} :action (str "/redis/" (:name instance))))]]
-         )
-      ]
-      [:a {:href "/redis/add" } [:button.btn.btn-primary "Add instance" ]]
-      (when  (local-redis-available)
+      [:div.row-fluid 
+       [:div.span12
+        (breadcrumb)]]
+      [:div.row
+       [:div.span12
+        (when message [:div.alert.alert-success message])]]
+      [:div.row 
+       [:div.span10
+        [:table.table.table-bordered
+         [:tr [:th "Name"][:th "Host"][:th "Port"][:th ]]
+         (for [instance (sort-by :name (vals (get-instances)))]
+           [:tr
+            [:td [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
+            [:td (:ip instance)]
+            [:td (:port instance)]
+            [:td  
+             (f/render-form (assoc instance-form :values {:operation "delete"}  :action (str "/redis/" (:name instance)))) 
+             (f/render-form (assoc instance-form :submit-label "Edit" :values {:operation "edit"} :action (str "/redis/" (:name instance))))]]
+           )
+         ]
+        [:a {:href "/redis/add" } [:button.btn.btn-primary "Add instance" ]]
+        ]
+       [:div.span2
+        (when  (local-redis-available)
         (if (setup-in-local-redis)
           [:div.alert.alert-info "Settings are persisted in Redis instance " setup-host " under key " setup-key
            ". Save "  [:a { :onclick "document.do_not_persist_in_redis.submit();"} "settings in volatile memory"] " instead."]
@@ -144,9 +150,14 @@
            [:a { :onclick "document.persist_in_redis.submit();"} "Persist settings in redis instance"]  " " 
            setup-host " under key " setup-key " instead."
            ] 
-          ))
-      [:form {:name "persist_in_redis" :action "/redis" :method :post} [:input {:type "hidden" :name "operation" :value "enable_redis_persistance"}]]
-      [:form {:name "do_not_persist_in_redis" :action "/redis" :method :post} [:input {:type "hidden" :name "operation" :value "disable_redis_persistance"}]]
+          ))      
+        ]
+       ]
+      [:div.row
+       [:div.span12   
+        [:form {:name "persist_in_redis" :action "/redis" :method :post} [:input {:type "hidden" :name "operation" :value "enable_redis_persistance"}]]
+        [:form {:name "do_not_persist_in_redis" :action "/redis" :method :post} [:input {:type "hidden" :name "operation" :value "disable_redis_persistance"}]]
+        ]]
       )))
 
 (defn redis-operate[params]
