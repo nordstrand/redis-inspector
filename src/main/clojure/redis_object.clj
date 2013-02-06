@@ -61,21 +61,12 @@
      })
 
 
+(defmulti redis-show-object (fn [name key & params] (keyword (redis-tools/winstance (get-instance-by-name name) (car/type key)))))
 
-(declare redis-show-zset redis-show-hash redis-show-string redis-show-list redis-show-set)
-
-(defn redis-show-object [name key & params]
-  (let [type (redis-tools/winstance (get-instance-by-name name) (car/type key))]
-    (cond
-    (= type "zset" ) (redis-show-zset name key (first params))
-    (= type "hash" ) (redis-show-hash name key (first params))
-    (= type "string" ) (redis-show-string name key (first params))
-    (= type "list" ) (redis-show-list name key (first params))
-    (= type "set" ) (redis-show-set name key (first params))
-    true (str "Object " key " of type " type " not yet supported."))))
+(defmethod redis-show-object :default [_ key & params] (str "Object " key " is of a type that is not yet supported."))
 
 
-(defn redis-show-hash [name key & params]
+(defmethod redis-show-object :hash [name  key & params]   
   (let [defaults {}
         values (merge defaults (first params))
         base-url (format "/redis/%s/%s" name key)
@@ -107,7 +98,7 @@
                              ))))
 
 
-(defn redis-show-set [name key & params]
+(defmethod redis-show-object :set [name key & params]   
   (let [defaults {}
         values (merge defaults (first params))
         base-url (format "/redis/%s/%s" name key)
@@ -126,7 +117,7 @@
           ]]
       )))
 
-(defn redis-show-string [name key & params]
+(defmethod redis-show-object :string [name key & params]   
   (let [defaults {}
         values (merge defaults (first params))
         size (redis-tools/winstance (get-instance-by-name name) (car/strlen key))
@@ -155,9 +146,7 @@
                             :values values)
                              ))))
 
-
-
-(defn redis-show-zset [name key & params]
+(defmethod redis-show-object :zset [name key & params]   
   (let [defaults {:from 0, :to 10, :reverse false}
         values (merge defaults (first params))
         from (bigint (:from values)) 
@@ -198,8 +187,7 @@
                              ))))
   
 
-
-(defn redis-show-list [name key & params]
+(defmethod redis-show-object :list [name key & params]   
   (let [
         defaults {:from 0, :to 10}
         values (merge defaults (first params))
@@ -237,7 +225,3 @@
                             :values values)
                              )
       ]])))
-  
-
-
-
