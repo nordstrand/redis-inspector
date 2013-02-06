@@ -22,7 +22,8 @@
       ".form-table .checkbox-row label { display: inline; margin-left: 5px; }"
       ".form-table .checkbox-row .input-shell { margin-bottom: 10px; }"
       ".form-table .submit-row th, .form-table .submit-row td { padding: 30px 0; }"
-      ".form-table .problem th, .form-table .problem td { color: #b94a48; background: #fee; }"]]
+      ".form-table .problem th, .form-table .problem td { color: #b94a48; background: #fee; }"
+      ".table td  {vertical-align: middle;}" ]]
     [:body
      body]
     ))

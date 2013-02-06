@@ -33,13 +33,6 @@
    :validator validate-ip
    })
 
-(def key-form
-  {:method "post"
-   :renderer :inline
-   :submit-label "Delete"
-   :fields [{:name :operation :type :hidden }            ]
-   })
-
 (defn redis-show-instance [name flash]
     (layout
       (breadcrumb name)
@@ -62,13 +55,13 @@
            
            (for [key (sort (winstance instance (car/keys "*")))]
              [:tr
-             [:td [:a {:href (str "/redis/" (:name instance) "/" key)} key]]
-             [:td (winstance instance (car/type key))]
-             [:td (winstance instance (car/ttl key))]
-             [:td  
-              (f/render-form (assoc key-form :action (str "/redis/" (:name instance) "/" key )
-                                     :values{ :operation "delete" })) 
-              ]]
+              [:td [:a {:href (str "/redis/" (:name instance) "/" key)} key]]
+              [:td (winstance instance (car/type key))]
+              [:td (winstance instance (car/ttl key))]
+              [:td 
+               [:form {:action (str "/redis/" (:name instance) "/" key) :method :post :style "margin-bottom: 0px;"} 
+                [:div.btn-group
+                 [:input.btn {:type "submit" :name "operation" :value "Delete"}]]]]]
              )
            ]]        
          [:div.pull-right {:style "width: 43%"}
@@ -99,13 +92,17 @@
        [:li [:a {:href "/"} "Home"] [:span.divider]]
        [:li [:a {:href "/redis"} "Instances"] [:span.divider]]
        [:li.active "New instance"]] 
-      [:div.pull-left {:style "width: 55%"}
+      [:div.row
+       [:div.span9
        (f/render-form (assoc redis-form
                              :values (merge defaults params)
                              :problems problems))]
-      [:div.pull-right {:style "width: 43%"}
-       [:p {:style "word-wrap: normal; white-space: pre; overflow: scroll; font-size: 12px; border: none; background: #f8f8f8; padding: 10px"}
-        "Enter Redis server details"]])))
+      [:div.span3
+       
+       [:h3 "Enter Redis instance details." ]
+        [:p "The default port is " (-> :port defaults) 
+         " and the default database is " (-> :db defaults) "."]
+        [:p "The name of instance can be freely choosen but needs to be unique."]]])))
 
 (defn redis-list [session]
   (let [defaults {:port 6379} message  session ]    
@@ -122,10 +119,10 @@
          [:tr [:th.span4 "Name"][:th.span2 "Host"][:th.span1 "Port"][:th.span3 ]]
          (for [instance (sort-by :name (vals (get-instances)))]
            [:tr 
-            [:td  {:style "vertical-align: middle;"} [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
-            [:td  {:style "vertical-align: middle;"} (:ip instance)]
-            [:td  {:style "vertical-align: middle;"} (:port instance)]
-            [:td {:style "vertical-align: middle;"}  
+            [:td [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
+            [:td (:ip instance)]
+            [:td (:port instance)]
+            [:td 
              [:form {:action (str "/redis/" (:name instance)) :method :post :style "margin-bottom: 0px;"} 
                [:div.btn-group
                 (for [op ["Browse" "Ping" "Edit" "Delete"]]   [:input.btn {:type "submit" :name "operation" :value op}])]]]]
@@ -165,12 +162,11 @@
   
 
 (defn redis-operate-on-key[name key params]
-  (let [values (fp/parse-params key-form params)]
      (cond
-       (= "delete" (-> values :operation)) (do 
+       (= "delete" (clojure.string/lower-case (-> params :operation))) (do 
                                              (winstance (get-instance-by-name name) (car/del key))
                                              (assoc (redirect (str "/redis/" name)) :flash (str "Key " key " deleted.")))
-       :else (assoc (redirect (str "/redis/" name)) :flash (str "Unknow operation.")))))
+       :else (assoc (redirect (str "/redis/" name)) :flash (str "Unknow operation."))))
  
 
 (defmulti redis-operate-on-instance (fn [name params] (-> params :operation clojure.string/lower-case keyword)))
