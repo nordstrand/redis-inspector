@@ -33,20 +33,11 @@
    :validator validate-ip
    })
 
-(def instance-form
-  {:method "post"
-   :renderer :inline
-   :submit-label "Delete"
-   :fields [{:name :operation :type :hidden }
-            ]
-   })
-
 (def key-form
   {:method "post"
    :renderer :inline
    :submit-label "Delete"
-   :fields [{:name :operation :type :hidden }
-            ]
+   :fields [{:name :operation :type :hidden }            ]
    })
 
 (defn redis-show-instance [name flash]
@@ -128,21 +119,22 @@
       [:div.row 
        [:div.span10
         [:table.table.table-bordered
-         [:tr [:th "Name"][:th "Host"][:th "Port"][:th ]]
+         [:tr [:th.span4 "Name"][:th.span2 "Host"][:th.span1 "Port"][:th.span3 ]]
          (for [instance (sort-by :name (vals (get-instances)))]
-           [:tr
-            [:td [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
-            [:td (:ip instance)]
-            [:td (:port instance)]
-            [:td  
-             (f/render-form (assoc instance-form :values {:operation "delete"}  :action (str "/redis/" (:name instance)))) 
-             (f/render-form (assoc instance-form :submit-label "Edit" :values {:operation "edit"} :action (str "/redis/" (:name instance))))]]
+           [:tr 
+            [:td  {:style "vertical-align: middle;"} [:a {:href (str "/redis/" (:name instance))} (:name instance)]]
+            [:td  {:style "vertical-align: middle;"} (:ip instance)]
+            [:td  {:style "vertical-align: middle;"} (:port instance)]
+            [:td {:style "vertical-align: middle;"}  
+             [:form {:action (str "/redis/" (:name instance)) :method :post :style "margin-bottom: 0px;"} 
+               [:div.btn-group
+                (for [op ["Browse" "Ping" "Edit" "Delete"]]   [:input.btn {:type "submit" :name "operation" :value op}])]]]]
            )
          ]
         [:a {:href "/redis/add" } [:button.btn.btn-primary "Add instance" ]]
         ]
        [:div.span2
-        (when  (local-redis-available)
+        (when  true
         (if (setup-in-local-redis)
           [:div.alert.alert-info "Settings are persisted in Redis instance " setup-host " under key " setup-key
            ". Save "  [:a { :onclick "document.do_not_persist_in_redis.submit();"} "settings in volatile memory"] " instead."]
@@ -179,17 +171,17 @@
                                              (winstance (get-instance-by-name name) (car/del key))
                                              (assoc (redirect (str "/redis/" name)) :flash (str "Key " key " deleted.")))
        :else (assoc (redirect (str "/redis/" name)) :flash (str "Unknow operation.")))))
-  
-(defn redis-operate-on-instance[name params]
-  (let [values (fp/parse-params instance-form params)]
-     (cond
-       (= "delete" (-> values :operation)) (do 
-                                             (delete-instance name)
-                                             (assoc (redirect "/redis") :flash (str "Instance  " name " deleted!")))
-       (= "edit" (-> values :operation)) (redis-show-form (get-instance-by-name name))
-       :else (assoc (redirect (str "/redis")) :flash (str "Unknow operation on instance.")))))
+ 
 
-
+(defmulti redis-operate-on-instance (fn [name params] (-> params :operation clojure.string/lower-case keyword)))
+(defmethod redis-operate-on-instance :ping [name _] 
+  (assoc (redirect "/redis")  
+         :flash (str name  ": " (winstance (get-instance-by-name name) (car/ping)))))
+(defmethod redis-operate-on-instance :edit [name _] (redis-show-form (get-instance-by-name name)))
+(defmethod redis-operate-on-instance :browse [name _] (redirect (str "/redis/" name)))
+(defmethod redis-operate-on-instance :delete [name _] 
+  (delete-instance name)
+  (assoc (redirect "/redis") :flash (str "Instance  " name " deleted.")))
 
 
 (defn redis-submit [params]

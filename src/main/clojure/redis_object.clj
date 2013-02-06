@@ -30,8 +30,8 @@
    :submit-label "OK"
    :method :get
    :fields [{:name :h4 :type :heading :text "Show elements"}
-            {:name :from :datatype :int}
-            {:name :to :datatype :int}
+            {:name :from :datatype :int :class "span1"}
+            {:name :to :datatype :int  :class "span1"}
             ]
    :validations [[:required [:from :to]]
                  [:int [:from :to]]
@@ -211,7 +211,8 @@
         ]
     (layout
       (breadcrumb name key)
-      [:div.pull-left {:style "width: 55%"}
+       [:div.row 
+       [:div.span10
        (paginate base-url from to size) 
        [:table.table.table-bordered
         [:tr
@@ -223,18 +224,19 @@
         ]
        (paginate base-url from to size) 
        ]
-      [:div.pull-right {:style "width: 43%"}
+       [:div.span2
            [:h4 key]
            
           [:ul
            [:li "Type: " (redis-tools/winstance instance (car/type key))]
            [:li "Size: " size]
            [:li "From: " (:from values) " To: " (:to values)]
-          ]]
+          ]
       (f/render-form (assoc list-form    
                             :action base-url
                             :values values)
-                             ))))
+                             )
+      ]])))
   
 
 

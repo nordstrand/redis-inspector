@@ -8,7 +8,7 @@
 
 (def redises (atom {}))
 
-(defonce setup-host "192.168.0.118")
+(defonce setup-host "127.0.0.1")
 (defonce setup-key "redis_inspector_data")
 
 
