@@ -6,6 +6,13 @@
 
 (def connection-pool (car/make-conn-pool))
 
+
+(defn conn-spec[instance]
+  (car/make-conn-spec :host (:ip instance)))
+  
+(defmacro winstance [instance & body] `(car/with-conn connection-pool (conn-spec ~instance)  ~@body))
+(defmacro wsetup [& body] `(car/with-conn (car/make-conn-pool) (car/make-conn-spec :host setup-host)  ~@body))
+
 (def redises (atom {}))
 
 (defonce setup-host "127.0.0.1")
@@ -47,9 +54,3 @@
       (wsetup (car/set setup-key (dissoc setup name))))
     (reset! redises (dissoc @redises name))))
     
-
-(defn conn-spec[instance]
-  (car/make-conn-spec :host (:ip instance)))
-  
-(defmacro winstance [instance & body] `(car/with-conn connection-pool (conn-spec ~instance)  ~@body))
-(defmacro wsetup [& body] `(car/with-conn (car/make-conn-pool) (car/make-conn-spec :host setup-host)  ~@body))

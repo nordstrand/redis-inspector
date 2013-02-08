@@ -8,10 +8,16 @@
             [redis :as redis-page]
             [hiccup.bootstrap.middleware :refer [wrap-bootstrap-resources]]
             [redis-object :as redis-object-page]
+            [xhr :as xhr]                                    
             ))
 
 (defroutes routes
+  ;static routes
+  (GET "/js/:j" [j] (resource-response j {:root "public/js"}))
   (GET "/favicon.ico" [] (resource-response "favicon.ico" {:root "public"}))
+  ;xhr routes
+  (GET "/xhr/:name" [name] (xhr/get-instance-stats name)) 
+  ;dynamic routes
   (GET "/" [ ] (redirect  "/redis"))
   (GET "/redis" {flash :flash} (redis-page/redis-list flash))
   (POST "/redis" [& params] (redis-page/redis-operate params))
@@ -21,7 +27,6 @@
   (POST "/redis/:name/:key" [name key & params] (redis-page/redis-operate-on-key name key params))
   (POST "/redis/:name" [name & params] (redis-page/redis-operate-on-instance name params))
   (GET "/redis/:name/:key" [name key & params] (redis-object-page/redis-show-object name key params))
-  (GET "/debug/:x" [x & p] (str "uri: " x " params:" p))
   (ANY "*" [] "Not found!"))
 
 
@@ -51,6 +56,7 @@
     site
     ring.middleware.content-type/wrap-content-type
     ))
+
 
 (defn -main [& [port]]
   (let [port 8080]

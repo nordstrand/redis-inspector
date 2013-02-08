@@ -4,6 +4,7 @@
             [formative.core :as f]
             [formative.parse :as fp]
             [hiccup.page :as page]
+            [hiccup.element :as element]
             [web-tools :refer [layout breadcrumb]]
             [clojure.pprint :refer [pprint]]
             [taoensso.carmine :as car]
@@ -46,13 +47,7 @@
          (when flash [:div.alert.alert-success flash])
          [:div.pull-left {:style "width: 55%"}
           [:table.table.table-bordered
-           [:thead
-            [:tr
-             [:th "Key"]
-             [:th "Type"]
-             [:th "TTL"]
-            [:td ]]]
-           
+           [:thead [:tr [:th "Key"] [:th "Type"][:th "TTL"] [:td ]]]
            (for [key (sort (winstance instance (car/keys "*")))]
              [:tr
               [:td [:a {:href (str "/redis/" (:name instance) "/" key)} key]]
@@ -60,8 +55,7 @@
               [:td (winstance instance (car/ttl key))]
               [:td 
                [:form {:action (str "/redis/" (:name instance) "/" key) :method :post :style "margin-bottom: 0px;"} 
-                [:div.btn-group
-                 [:input.btn {:type "submit" :name "operation" :value "Delete"}]]]]]
+                [:div.btn-group [:input.btn {:type "submit" :name "operation" :value "Delete"}]]]]]
              )
            ]]        
          [:div.pull-right {:style "width: 43%"}
@@ -70,17 +64,18 @@
            (for [[k v] instance]
              [:li k ": " v])]
           (for [[name details] (get-instances) :when (and (-> details :ip   (= (get instance-info "master_host")))                                                        )]
-            [:div.alert.alert-info  "Slave of " [:a {:href (apply str "/redis/" name )} name]])
-          
+            [:div.alert.alert-info  "Slave of " [:a {:href (apply str "/redis/" name )} name]])          
           (for [[name details] (get-instances) :when (not-empty (filter #(= (-> details :ip) %1) slaves))]
-            [:div.alert.alert-info "Has slave " [:a {:href (apply str "/redis/" name )} name]])
-          
-        
+            [:div.alert.alert-info "Has slave " [:a {:href (apply str "/redis/" name )} name]])                
           [:h4 "INFO"]
           [:ul
            (for [[k v]  (sort instance-info)]
-             [:li k ": " v])]
-          ]])))
+             [:li k ": " [:span  {:id k} v]])]
+          ]
+         (page/include-js "/js/zepto.js" "/js/instance-info.js")
+         (element/javascript-tag (format "updateInstance('%s');" name))
+         ]
+       )))
 
 
     
