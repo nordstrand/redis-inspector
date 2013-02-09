@@ -15,11 +15,6 @@
             <version>1.4.0</version>
         </dependency>
         <dependency>
-            <groupId>cheshire</groupId>
-            <artifactId>cheshire</artifactId>
-            <version>5.0.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.taoensso</groupId>
             <artifactId>carmine</artifactId>
             <version>1.2.1</version>
