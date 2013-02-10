@@ -48,13 +48,15 @@
           response
           )))))
 
+
 (def app
   (-> #'routes 
-    (wrap-spy "start" true)
     wrap-bootstrap-resources
+    (wrap-spy "start" true)
     trace/wrap-stacktrace 
     site
     ring.middleware.content-type/wrap-content-type
+    etag/wrap-etag
     ))
 
 

@@ -64,6 +64,11 @@
             <artifactId>cheshire</artifactId>
             <version>5.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>expectations</groupId>
+            <artifactId>expectations</artifactId>
+            <version>1.4.30</version>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>
