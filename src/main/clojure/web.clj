@@ -15,7 +15,11 @@
   ;static routes
   (GET "/js/:j" [j] (resource-response j {:root "public/js"}))
   (GET "/favicon.ico" [] (resource-response "favicon.ico" {:root "public"}))
+  (GET "/html/:h" [h] (resource-response h {:root "public/html"}))
+  (GET "/css/:c" [c] (resource-response c {:root "public/css"}))
+  
   ;xhr routes
+  (POST "/xhr/repl" [& params] (web-repl/do-eval (:text params) :doh))
   (GET "/xhr/:name" [name] (xhr/get-instance-stats name)) 
   ;dynamic routes
   (GET "/" [ ] (redirect  "/redis"))
