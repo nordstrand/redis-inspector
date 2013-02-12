@@ -10,6 +10,9 @@
 (defn conn-spec[instance]
   (car/make-conn-spec :host (:ip instance)))
   
+(declare get-instance-by-name)
+(defmacro winstance-name [instance-name & body] 
+  `(car/with-conn connection-pool (conn-spec (get-instance-by-name ~instance-name))  ~@body))
 (defmacro winstance [instance & body] `(car/with-conn connection-pool (conn-spec ~instance)  ~@body))
 (defmacro wsetup [& body] `(car/with-conn (car/make-conn-pool) (car/make-conn-spec :host setup-host)  ~@body))
 
@@ -21,7 +24,6 @@
 
 (defn local-redis-available[] 
   (try (java.net.Socket. setup-host  6379) (catch Exception _ false)))
-
 (defn setup-in-local-redis[]
   (when (local-redis-available)  (wsetup (car/get setup-key)))) 
 
