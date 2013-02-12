@@ -1,4 +1,4 @@
-(ns etag-test
+(ns etag-tests
   
   (:use expectations)
   (:require 
@@ -7,6 +7,7 @@
             )
   )
 
+(disable-run-on-shutdown)
 
 (expect "6143a88837f035afb02e458e74ae474f55a1b98" 
         (etag/sha1 "test123"))
