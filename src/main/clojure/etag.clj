@@ -23,10 +23,10 @@
     (let [response (handler request)]    
       (if (re-find '#"text/javascript|text/css" (get-in response [:headers "Content-Type"]))
         (let [old-etag (get-in request [:headers "if-none-match"])
-              new-etag (sha1-of-is (-> :body response))]
-          (if (= old-etag (:sha1 new-etag))
+              {:keys [sha1 is]} (sha1-of-is (-> :body response))]
+          (if (= old-etag sha1)
             {:status 304 :headers {} :body ""}
             (-> response
-              (assoc-in [:headers "ETag"] (:sha1 new-etag))
-              (assoc :body (:is new-etag)))))
+              (assoc-in [:headers "ETag"] sha1)
+              (assoc :body is))))
         response))))
