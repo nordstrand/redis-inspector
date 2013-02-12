@@ -8,7 +8,9 @@
             [redis :as redis-page]
             [hiccup.bootstrap.middleware :refer [wrap-bootstrap-resources]]
             [redis-object :as redis-object-page]
-            [xhr :as xhr]                                    
+            [xhr :as xhr]
+            web-repl
+            etag
             ))
 
 (defroutes routes
