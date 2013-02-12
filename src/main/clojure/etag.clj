@@ -12,7 +12,6 @@
 (defn sha1-of-is[^java.io.InputStream is]
   (let [baos (java.io.ByteArrayOutputStream. )] 
     (clojure.java.io/copy is baos)
-    (println (sha1 (.toString baos)))
     {:sha1 (sha1 (.toString baos))
      :is (java.io.BufferedInputStream. (java.io.ByteArrayInputStream. (.toByteArray baos)))
      }))
