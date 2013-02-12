@@ -6,6 +6,8 @@
            [junit.framework AssertionFailedError ComparisonFailure]
            [java.lang.annotation Annotation]))
 
+(expectations/disable-run-on-shutdown)
+
 (def empty-ann-arr (make-array Annotation 0))
 
 (defn format-test-name [test-name test-meta]
