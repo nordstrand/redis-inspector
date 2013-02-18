@@ -14,6 +14,7 @@
          (binding [*ns* user-ns]
                (clojure.core/refer-clojure)
                (refer 'taoensso.carmine)
+               (refer 'clojure.repl)
                )
          user-ns))
 
@@ -50,15 +51,19 @@
       (store-bindings-for ~session-key)
       r#)))
 
-(defn do-eval [txt session-key2]
+(defn- do-eval-can-throw-exception [txt session-key2]
   (with-session session-key2
     (let [form (binding [*read-eval* false] (read-string txt))]
       (with-open [writer (java.io.StringWriter.)]
         (binding [*out* writer]
-          (try
-            (let [r (pr-str 
-                      (eval (concat (concat '(let) [['inst session-key2]])
-                                    [(concat  '(clojure.tools.macro/macrolet [(redis[& body] `(redis-tools/winstance-name  ~'inst  ~@body))])
-                                [form])])))]
-              (str (.toString writer) (str r)))
-            (catch Exception e (str (root-cause e)))))))))
+          (let [r (pr-str 
+                    (eval (concat (concat '(let) [['inst session-key2]])
+                                  [(concat  '(clojure.tools.macro/macrolet [(redis[& body] `(redis-tools/winstance-name  ~'inst  ~@body))])
+                                            [form])])))]
+            (str (.toString writer) (str r))))))))
+    
+
+(defn do-eval [txt session-key]
+    (try
+      (do-eval-can-throw-exception txt session-key)
+      (catch Exception e (str (root-cause e)))))

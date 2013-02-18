@@ -12,6 +12,7 @@
     [:head
      [:title "Redis Inspector"]
      (include-bootstrap)
+     (page/include-css "/css/web-repl.css")
       [:style
       "body { margin: 2em; }"
       ".form-table { width: 100%; }"

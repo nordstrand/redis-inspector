@@ -3,6 +3,7 @@ var ws = null;
 
 
 $(document).ready(function () {
+    /*
     ws = $.websocket("ws://" + window.location.host + "/websocket", {
         events: {
             'web-repl-response': function(info) {
@@ -13,9 +14,10 @@ $(document).ready(function () {
             }
         }
     });
+    */
 
     $("#console").console({
-        promptLabel: 'Clojure> ',
+        promptLabel: '=> ',
         commandValidate:function(line) {
             if (line == "") {
                 return false;

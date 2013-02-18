@@ -34,6 +34,17 @@
    :validator validate-ip
    })
 
+
+(defn repl-console[instance]
+  [:div
+  [:form#doh
+   [:input {:type "hidden" :name "text" :id "text"}]
+   [:input {:type "hidden" :name "instance" :value instance}]]
+  [:div#console]
+  (page/include-js "/js/jquery-1.5.min.js" "/js/jquery.console.js" "/js/web-repl.js")])
+  
+
+
 (defn redis-show-instance [name flash]
     (layout
       (breadcrumb name)
@@ -57,7 +68,9 @@
                [:form {:action (str "/redis/" (:name instance) "/" key) :method :post :style "margin-bottom: 0px;"} 
                 [:div.btn-group [:input.btn {:type "submit" :name "operation" :value "Delete"}]]]]]
              )
-           ]]        
+           ]
+          (repl-console name)
+          ]        
          [:div.pull-right {:style "width: 43%"}
            [:h4 "Instance"]
           [:ul
@@ -72,8 +85,8 @@
            (for [[k v]  (sort instance-info)]
              [:li k ": " [:span  {:id k} v]])]
           ]
-         (page/include-js "/js/zepto.js" "/js/instance-info.js")
-         (element/javascript-tag (format "updateInstance('%s');" name))
+       ;  (page/include-js "/js/zepto.js" "/js/instance-info.js")
+       ;  (element/javascript-tag (format "updateInstance('%s');" name))
          ]
        )))
 
