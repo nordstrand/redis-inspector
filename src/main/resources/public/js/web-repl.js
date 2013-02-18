@@ -43,7 +43,7 @@ $(document).ready(function () {
 
             //ws.send('selfish', {type: "web-repl", command: line});
         },
-        welcomeMessage:'Enter some Clojure code, and it will be evaluated ON THE SERVER -- CAREFUL!!!.',
+        welcomeMessage:'(redis [& body]) evaluates body with Redis commands bound to current redis instance.',
         autofocus:true,
         animateScroll:true,
         promptHistory:true

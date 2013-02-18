@@ -21,7 +21,7 @@
   (GET "/css/:c" [c] (resource-response c {:root "public/css"}))
   
   ;xhr routes
-  (POST "/xhr/repl" [& params] (web-repl/do-eval (:text params) :doh))
+  (POST "/xhr/repl" [& params] (web-repl/do-eval (:text params)  (:instance params)))
   (GET "/xhr/:name" [name] (xhr/get-instance-stats name)) 
   ;dynamic routes
   (GET "/" [ ] (redirect  "/redis"))
