@@ -8,6 +8,7 @@
 
 
 (defn conn-spec[instance]
+   {:pre  [(not (nil? instance))]}
   (car/make-conn-spec :host (:ip instance)))
   
 (declare get-instance-by-name)
