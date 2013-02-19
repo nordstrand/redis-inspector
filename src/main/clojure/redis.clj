@@ -85,8 +85,8 @@
            (for [[k v]  (sort instance-info)]
              [:li k ": " [:span  {:id k} v]])]
           ]
-       ;  (page/include-js "/js/zepto.js" "/js/instance-info.js")
-       ;  (element/javascript-tag (format "updateInstance('%s');" name))
+         (page/include-js "/js/zepto.js" "/js/instance-info.js")
+         (element/javascript-tag (format "updateInstance('%s');" name))
          ]
        )))
 

@@ -60,8 +60,10 @@
                  ]
      })
 
+(defn- disp [name key & params] (keyword (redis-tools/winstance (get-instance-by-name name) (car/type key))))
 
-(defmulti redis-show-object (fn [name key & params] (keyword (redis-tools/winstance (get-instance-by-name name) (car/type key)))))
+
+(defmulti redis-show-object disp)
 
 (defmethod redis-show-object :default [_ key & params] (str "Object " key " is of a type that is not yet supported."))
 
