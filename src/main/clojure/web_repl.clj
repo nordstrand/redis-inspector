@@ -14,7 +14,7 @@
          (binding [*ns* user-ns]
                (clojure.core/refer-clojure)
                (refer 'taoensso.carmine)
-               (refer 'clojure.repl)
+               (use 'clojure.repl)
                )
          user-ns))
 
