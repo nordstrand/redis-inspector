@@ -11,6 +11,7 @@
   (page/html5
     [:head
      [:title "Redis Inspector"]
+     (page/include-js "/js/jquery-1.9.1.min.js")
      (include-bootstrap)
      (page/include-css "/css/web-repl.css")
       [:style

@@ -41,7 +41,7 @@
    [:input {:type "hidden" :name "sexps" :id "sexps"}]
    [:input {:type "hidden" :name "instance" :value instance}]]
   [:div#console]
-  (page/include-js "/js/jquery-1.5.min.js" "/js/jquery.console.js" "/js/web-repl.js")])
+  (page/include-js "/js/jquery.console.js" "/js/web-repl.js")])
   
 
 
