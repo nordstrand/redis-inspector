@@ -21,12 +21,12 @@
   (GET "/css/:c" [c] (resource-response c {:root "public/css"}))
   
   ;xhr routes
-  (POST "/xhr/repl" [& params] (web-repl/do-eval (:text params)  (:instance params)))
+  (POST "/xhr/repl" [instance sexps] (web-repl/do-eval instance sexps))
   (GET "/xhr/:name" [name] (xhr/get-instance-stats name)) 
   ;dynamic routes
   (GET "/" [ ] (redirect  "/redis"))
   (GET "/redis" {flash :flash} (redis-page/redis-list flash))
-  (POST "/redis" [& params] (redis-page/redis-operate params))
+  (POST "/redis" [operation] (redis-page/redis-operate operation))
   (GET "/redis/add" [& params] (redis-page/redis-show-form params))
   (POST "/redis/add" [& params] (redis-page/redis-submit params))
   (GET "/redis/:name" [name :as {flash :flash}] (redis-page/redis-show-instance name flash))

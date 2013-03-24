@@ -51,9 +51,9 @@
       (store-bindings-for ~session-key)
       r#)))
 
-(defn- do-eval-can-throw-exception [txt session-key2]
+(defn- do-eval-can-throw-exception [session-key2 sexps]
   (with-session session-key2
-    (let [form (binding [*read-eval* false] (read-string txt))]
+    (let [form (binding [*read-eval* false] (read-string sexps))]
       (with-open [writer (java.io.StringWriter.)]
         (binding [*out* writer]
           (let [r (pr-str 

@@ -29,12 +29,12 @@ $(document).ready(function () {
         commandHandle:function(line, callback) {
             currentCallback = callback;
             
-            $("#text").val(line);
+            $("#sexps").val(line);
             
             $.ajax({
                 url : "/xhr/repl", 
                 type: "POST",
-                data:  $("#doh").serialize(), // {name: 'text', value: line}, //$("#doh").serialize(),
+                data:  $("#repl").serialize(), // {name: 'text', value: line}, //$("#doh").serialize(),
                 success : function(info) { 
                     currentCallback([
                                      {msg: info,

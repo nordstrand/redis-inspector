@@ -37,8 +37,8 @@
 
 (defn repl-console[instance]
   [:div
-  [:form#doh
-   [:input {:type "hidden" :name "text" :id "text"}]
+  [:form#repl
+   [:input {:type "hidden" :name "sexps" :id "sexps"}]
    [:input {:type "hidden" :name "instance" :value instance}]]
   [:div#console]
   (page/include-js "/js/jquery-1.5.min.js" "/js/jquery.console.js" "/js/web-repl.js")])
@@ -157,16 +157,15 @@
         ]]
       )))
 
-(defn redis-operate[params]
-  (let [values params]
+(defn redis-operate[operation]
      (cond
-       (= "enable_redis_persistance" (-> values :operation)) (do 
+       (= "enable_redis_persistance" operation) (do 
                                              (enable-setup-in-local-redis)
                                              (assoc (redirect "/redis") :flash "Settings persisted in redis instance."))
-       (= "disable_redis_persistance" (-> values :operation)) (do 
+       (= "disable_redis_persistance" operation) (do 
                                              (disable-setup-in-local-redis)
                                              (assoc (redirect "/redis") :flash "Settings deleted from redis instance."))
-       :else (assoc (redirect (str "/redis")) :flash (str "Unknow operation.")))))
+       :else (assoc (redirect (str "/redis")) :flash (str "Unknow operation."))))
   
 
 (defn redis-operate-on-key[name key params]

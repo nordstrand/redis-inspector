@@ -51,7 +51,7 @@
   {:pre  [(< from to)] }
  (let [page-size (- to from)]
     (inc (/  from  page-size)))) 
-
+;(ring.util.codec/form-encode {:foo 1 :bar 2 :baz 3})
 (defn- page-url 
   ([base-url from to] 
     (format "%s?from=%s&to=%s" base-url from to))
