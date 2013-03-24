@@ -67,7 +67,7 @@
         <dependency>
             <groupId>expectations</groupId>
             <artifactId>expectations</artifactId>
-            <version>1.4.30</version>
+            <version>1.4.36</version>
         </dependency>
     </dependencies>
     <repositories>
