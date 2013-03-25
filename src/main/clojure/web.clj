@@ -2,6 +2,7 @@
   (:gen-class :main true) 
   (:require [compojure.core :refer [defroutes GET POST ANY]]
             [compojure.handler :refer [site]]
+            [compojure.route :refer [resources not-found]]
             [ring.middleware.stacktrace :as trace]
             [ring.adapter.jetty :as jetty]
             [ring.util.response :refer [response redirect resource-response]]
@@ -14,11 +15,6 @@
             ))
 
 (defroutes routes
-  ;static routes
-  (GET "/js/:j" [j] (resource-response j {:root "public/js"}))
-  (GET "/favicon.ico" [] (resource-response "favicon.ico" {:root "public"}))
-  (GET "/html/:h" [h] (resource-response h {:root "public/html"}))
-  (GET "/css/:c" [c] (resource-response c {:root "public/css"}))
   
   ;xhr routes
   (POST "/xhr/repl" [instance sexps] (web-repl/do-eval instance sexps))
@@ -33,7 +29,11 @@
   (POST "/redis/:name/:key" [name key & params] (redis-page/redis-operate-on-key name key params))
   (POST "/redis/:name" [name & params] (redis-page/redis-operate-on-instance name params))
   (GET "/redis/:name/:key" [name key & params] (redis-object-page/redis-show-object name key params))
-  (ANY "*" [] "Not found!"))
+  
+  (resources "/js" {:root "public/js"})
+  (resources "/css" {:root "public/css"})
+  (GET "/favicon.ico" [] (resource-response "favicon.ico" {:root "public"}))
+  (not-found "Page not found"))
 
 
 (defn format-request [name request]
