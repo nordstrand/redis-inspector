@@ -14,3 +14,8 @@ Redis data inspector in Clojure, providing a web based redis repl.
 
 
 ![redis-inspector](https://raw.github.com/nordstrand/redis-inspector/master/pics/screenshot.png)
+
+
+## License
+
+Distributed under the [Eclipse Public License](http://www.eclipse.org/legal/epl-v10.html), the same as Clojure.
